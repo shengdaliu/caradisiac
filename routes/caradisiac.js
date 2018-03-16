@@ -70,20 +70,20 @@ router.get('/populate', function(req, res, next) {
         index: 'cardisiac',
         type: 'model',
         body: {
-          query: {
-            bool: {
-              must: {
-                  range: {
-                      volume: {
-                          gt: 500
-                      }
-                  }
-              }
+            size: 10,
+            query: {
+               match_all: {},
+            },
+            sort: {
+                "volume.keyword": {
+                    order: "desc"
+                }
             }
-          }
         }
       }).then(function (res) {
-        console.log(res.hits.hits[0]['_source']);
+            res.hits.hits.forEach(model => {
+                console.log(model['_source']);
+          });
       }, function (err) {
         console.trace(err.message);
       });
