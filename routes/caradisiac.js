@@ -25,9 +25,8 @@ router.get('/', function(req, res, next) {
 //             console.log(error);
 //         }
 //       });
-//   res.render('index', { title: 'Express' });
+//   res.json();
 // });
-
 
 router.get('/populate', function(req, res, next) {
     async function getBrandsName () {
@@ -66,6 +65,7 @@ router.get('/populate', function(req, res, next) {
   });
   
   router.get('/suv', function(req, res, next) {
+    let results = []
     client.search({
         index: 'cardisiac',
         type: 'model',
@@ -82,12 +82,13 @@ router.get('/populate', function(req, res, next) {
         }
       }).then(function (res) {
             res.hits.hits.forEach(model => {
-                console.log(model['_source']);
+                results.push(model['_source']);
           });
       }, function (err) {
         console.trace(err.message);
+      }).then(() => {
+        res.json(results);
       });
-    res.render('index', { title: 'Express' });
   });
   
 module.exports = router;
