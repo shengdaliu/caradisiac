@@ -145,5 +145,132 @@ router.get('/populate', function(req, res, next) {
         res.json(results);
       });
   });
+
+  router.get('/suv/distinct/brands', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            size: 0,
+            aggs: {
+                brands: {
+                    terms: {
+                        field: "brand.keyword",
+                        size: 500,
+                        order: {
+                            _key: "asc"
+                        }
+                    }
+                }
+            }
+        }
+      }).then(function (res) {
+            res.aggregations.brands.buckets.forEach(brand => {
+                results.push(brand.key);
+          });
+      }, function (err) {
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });  
   
+  router.get('/suv/distinct/volume', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            size: 0,
+            aggs: {
+                brands: {
+                    terms: {
+                        field: "volume.keyword",
+                        size: 500,
+                        order: {
+                            _key: "desc"
+                        }
+                    }
+                }
+            }
+        }
+      }).then(function (res) {
+            res.aggregations.brands.buckets.forEach(brand => {
+                results.push(brand.key);
+          });
+      }, function (err) {
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });
+
+
+  router.get('/suv/searchByBrand/:brand/:minVolume/:maxVolume/:page', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            from: req.params.page * 10,
+            size: 10,
+            query: {
+               bool: {
+                   must: [
+                       { match: { "brand.keyword": req.params.brand }},
+                       { range: { "volume.keyword": { gte: req.params.minVolume, lte: req.params.maxVolume } }}
+                   ]
+               }
+            },
+            sort: {
+                "volume.keyword": {
+                    order: "desc"
+                }
+            }
+        }
+      }).then(function (res) {
+            res.hits.hits.forEach(model => {
+                results.push(model['_source']);
+          });
+      }, function (err) {s
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });
+
+
+  router.get('/suv/searchByVolume/:minVolume/:maxVolume/:page', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            from: req.params.page * 10,
+            size: 10,
+            query: {
+               bool: {
+                   must: [
+                       { range: { "volume.keyword": { gte: req.params.minVolume, lte: req.params.maxVolume } }}
+                   ]
+               }
+            },
+            sort: {
+                "volume.keyword": {
+                    order: "desc"
+                }
+            }
+        }
+      }).then(function (res) {
+            res.hits.hits.forEach(model => {
+                results.push(model['_source']);
+          });
+      }, function (err) {s
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });
+
 module.exports = router;
