@@ -90,5 +90,60 @@ router.get('/populate', function(req, res, next) {
         res.json(results);
       });
   });
+
+  router.get('/suv/:quantity', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            size: req.params.quantity,
+            query: {
+               match_all: {},
+            },
+            sort: {
+                "volume.keyword": {
+                    order: "desc"
+                }
+            }
+        }
+      }).then(function (res) {
+            res.hits.hits.forEach(model => {
+                results.push(model['_source']);
+          });
+      }, function (err) {
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });
+
+  router.get('/suv/page/:number', function(req, res, next) {
+    let results = []
+    client.search({
+        index: 'cardisiac',
+        type: 'model',
+        body: {
+            from: req.params.number * 10,
+            size: 10,
+            query: {
+               match_all: {},
+            },
+            sort: {
+                "volume.keyword": {
+                    order: "desc"
+                }
+            }
+        }
+      }).then(function (res) {
+            res.hits.hits.forEach(model => {
+                results.push(model['_source']);
+          });
+      }, function (err) {
+        console.trace(err.message);
+      }).then(() => {
+        res.json(results);
+      });
+  });
   
 module.exports = router;
